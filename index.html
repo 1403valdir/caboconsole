@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de SLA e Uptime de Redes</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6f9;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 40px auto;
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        h2 { color: #1a365d; margin-top: 0; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; }
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        .results {
+            margin-top: 25px;
+            background: #f8fafc;
+            padding: 20px;
+            border-left: 4px solid #3182ce;
+            border-radius: 4px;
+        }
+        .result-item {
+            margin-bottom: 12px;
+            font-size: 15px;
+        }
+        .result-item strong { color: #2c5282; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Calculadora de Tempo de Queda (SLA / Uptime)</h2>
+    <p>Insira a meta de SLA da sua infraestrutura ou link IP para calcular o tempo máximo de indisponibilidade permitido.</p>
+    
+    <div class="form-group">
+        <label for="sla">Meta de SLA (%)</label>
+        <input type="number" id="sla" value="99.9" step="0.001" min="0" max="100" oninput="calcularSLA()">
+    </div>
+
+    <div class="results">
+        <div class="result-item">Tempo de queda Máximo Anual: <strong id="ano">-</strong></div>
+        <div class="result-item">Tempo de queda Máximo Mensal (30 dias): <strong id="mes">-</strong></div>
+        <div class="result-item">Tempo de queda Máximo Diário: <strong id="dia">-</strong></div>
+    </div>
+</div>
+
+<script>
+function formatarTempo(segundos) {
+    const dias = Math.floor(segundos / (3600*24));
+    segundos  %= 3600*24;
+    const horas = Math.floor(segundos / 3600);
+    segundos %= 3600;
+    const minutos = Math.floor(segundos / 60);
+    const segs = Math.floor(segundos % 60);
+
+    let resultado = "";
+    if (dias > 0) resultado += dias + "d ";
+    if (horas > 0 || dias > 0) resultado += horas + "h ";
+    if (minutos > 0 || horas > 0 || dias > 0) resultado += minutos + "m ";
+    resultado += segs + "s";
+    return resultado;
+}
+
+function calcularSLA() {
+    const sla = parseFloat(document.getElementById('sla').value);
+    if (isNaN(sla) || sla < 0 || sla > 100) return;
+
+    const downtimePorcentagem = (100 - sla) / 100;
+
+    const segundosAno = 365 * 24 * 60 * 60;
+    const segundosMes = 30 * 24 * 60 * 60;
+    const segundosDia = 24 * 60 * 60;
+
+    document.getElementById('ano').innerText = formatarTempo(segundosAno * downtimePorcentagem);
+    document.getElementById('mes').innerText = formatarTempo(segundosMes * downtimePorcentagem);
+    document.getElementById('dia').innerText = formatarTempo(segundosDia * downtimePorcentagem);
+}
+
+// Executa ao carregar a página inicial
+calcularSLA();
+</script>
+
+</body>
+</html>
