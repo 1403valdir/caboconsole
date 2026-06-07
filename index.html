@@ -6,7 +6,7 @@
     <title>Cabo Console - Portal de Utilitários de Redes</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen font-sans">
+<body class="bg-slate-900 text-slate-100 min-h-screen font-sans flex flex-col justify-between">
 
     <header class="border-b border-slate-800 bg-slate-950/50 backdrop-blur">
         <div class="max-w-6xl mx-auto px-4 py-8 text-center md:text-left flex flex-col md:flex-row justify-between items-center gap-6">
@@ -19,23 +19,34 @@
                 </p>
             </div>
             
-            <div class="bg-slate-900 border border-slate-800 rounded-lg p-4 shadow-xl flex items-center gap-4 w-full md:w-auto max-w-sm">
-                <div class="p-3 bg-cyan-950/50 rounded-md border border-cyan-800/30">
+            <div class="bg-slate-900 border border-slate-800 rounded-lg p-4 shadow-xl flex items-center gap-4 w-full md:w-auto max-w-md">
+                <div class="p-3 bg-cyan-950/50 rounded-md border border-cyan-800/30 hidden sm:block">
                     <svg class="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
                     </svg>
                 </div>
-                <div>
-                    <p class="text-xs text-slate-500 font-mono uppercase tracking-wider">Seu IP Público</p>
-                    <p id="user-ip" class="text-base font-bold text-slate-200 font-mono tracking-wide">
-                        Detectando...
-                    </p>
+                <div class="grid grid-cols-1 gap-1 text-left w-full font-mono text-xs">
+                    <div>
+                        <span class="text-slate-500 uppercase text-[10px] tracking-wider block">Seu IP Público</span>
+                        <span id="user-ip" class="text-sm font-bold text-slate-300 tracking-wide">Detectando...</span>
+                    </div>
+                    <div class="border-t border-slate-800/60 my-0.5"></div>
+                    <div class="flex justify-between gap-6">
+                        <div>
+                            <span class="text-slate-500 uppercase text-[10px] tracking-wider block">Provedor / ASN</span>
+                            <span id="user-isp" class="text-slate-300 font-medium truncate max-w-[180px] block">Buscando...</span>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-slate-500 uppercase text-[10px] tracking-wider block">Latência (Server)</span>
+                            <span id="user-ping" class="text-slate-300 font-bold block">-- ms</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </header>
 
-    <main class="max-w-6xl mx-auto px-4 py-12">
+    <main class="max-w-6xl mx-auto px-4 py-12 w-full flex-grow">
         
         <div class="mb-8 flex items-center justify-between">
             <h2 class="text-xl font-bold text-slate-300 flex items-center gap-2">
@@ -52,90 +63,156 @@
 
     </main>
 
-    <footer class="border-t border-slate-800 mt-20 bg-slate-950/30">
-        <div class="max-w-6xl mx-auto px-4 py-6 text-center text-xs text-slate-500 font-mono">
-            &copy; 2026 Cabo Console. Projetado para Engenharia de Redes.
+    <footer class="border-t border-slate-800 mt-20 bg-slate-950/30 w-full">
+        <div class="max-w-6xl mx-auto px-4 py-6 text-center text-xs text-slate-500 font-mono space-y-2">
+            <div>
+                &copy; 2026 Cabo Console. Projetado para Engenharia de Redes.
+            </div>
+            <div class="flex items-center justify-center gap-2 text-slate-400 border-t border-slate-800/40 pt-2 max-w-xs mx-auto">
+                <span class="font-sans font-semibold tracking-wide text-[11px] text-slate-400">OP Tech Consultoria</span>
+                <span class="text-slate-600">|</span>
+                <a href="https://instagram.com/optechconsultoria" target="_blank" rel="noopener noreferrer" class="hover:text-pink-500 transition-colors flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M12.315 2c2.43 0 2.784.013 3.808.06 1.064.049 1.791.218 2.427.465a4.902 4.902 0 011.772 1.153 4.902 4.902 0 011.153 1.772c.247.636.416 1.363.465 2.427.048 1.067.06 1.407.06 4.123v.08c0 2.643-.012 2.987-.06 4.043-.049 1.064-.218 1.791-.465 2.427a4.902 4.902 0 01-1.153 1.772 4.902 4.902 0 01-1.772 1.153c-.636.247-1.363.416-2.427.465-1.067.048-1.407.06-4.123.06h-.08c-2.643 0-2.987-.012-4.043-.06-1.064-.049-1.791-.218-2.427-.465a4.902 4.902 0 01-1.772-1.153 4.902 4.902 0 01-1.153-1.772c-.247-.636-.416-1.363-.465-2.427-.047-1.024-.06-1.379-.06-3.808v-.63c0-2.43.013-2.784.06-3.808.049-1.064.218-1.791.465-2.427a4.902 4.902 0 011.153-1.772A4.902 4.902 0 015.45 2.525c.636-.247 1.363-.416 2.427-.465C8.901 2.013 9.256 2 11.685 2h.63zm-.081 1.802h-.468c-2.456 0-2.784.011-3.807.058-.975.045-1.504.207-1.857.344-.467.182-.8.398-1.15.748-.35.35-.566.683-.748 1.15-.137.353-.3.882-.344 1.857-.047 1.023-.058 1.351-.058 3.807v.468c0 2.456.011 2.784.058 3.807.045.975.207 1.504.344 1.857.182.466.399.8.748 1.15.35.35.683.566 1.15.748.353.137.882.3 1.857.344 1.054.048 1.37.058 4.041.058h.08c2.597 0 2.917-.01 3.96-.058.976-.045 1.505-.207 1.858-.344.466-.182.8-.398 1.15-.748.35-.35.566-.683.748-1.15.137-.353.3-.882.344-1.857.048-1.055.058-1.37.058-4.041v-.08c0-2.597-.01-2.917-.058-3.96-.045-.976-.207-1.505-.344-1.858a3.097 3.097 0 00-.748-1.15 3.098 3.098 0 00-1.15-.748c-.353-.137-.882-.3-1.857-.344-1.023-.047-1.351-.058-3.807-.058zM12 6.865a5.135 5.135 0 100 10.27 5.135 5.135 0 000-10.27zm0 1.802a3.333 3.333 0 110 6.666 3.333 3.333 0 010-6.666zm5.338-3.205a1.2 1.2 0 100 2.4 1.2 1.2 0 000-2.4z" clip-rule="evenodd" />
+                    </svg>
+                    @optechconsultoria
+                </a>
+            </div>
         </div>
     </footer>
 
     <script>
-        // 1. FUNÇÃO PARA DETECTAR O IP DO ANALISTA
-        async function buscarIP() {
+        // 1. TELEMETRIA: BUSCA IP E PROVEDOR (ISP)
+        async function coletarDadosRede() {
             const ipElement = document.getElementById('user-ip');
+            const ispElement = document.getElementById('user-isp');
+            
             try {
-                // Utiliza a API pública ipify para obter o IP em formato JSON
-                const resposta = await fetch('https://api.ipify.org?format=json');
+                // Utiliza a API do ip-api (gratuita e sem autenticação)
+                const resposta = await fetch('https://ip-api.com/json/?fields=status,message,query,isp,as');
+                if (!resposta.ok) throw new Error('Falha na API de telemetria');
+                
                 const dados = await resposta.json();
-                ipElement.innerText = dados.ip;
-                ipElement.classList.add('text-cyan-400');
+                
+                if (dados.status === 'success') {
+                    ipElement.innerText = dados.query;
+                    ipElement.classList.add('text-cyan-400');
+                    
+                    // Exibe o Nome do Provedor + ASN simplificado
+                    const asn = dados.as ? dados.as.split(' ')[0] : '';
+                    ispElement.innerText = `${dados.isp} ${asn}`.trim();
+                    ispElement.classList.add('text-cyan-400');
+                } else {
+                    throw new Error(dados.message);
+                }
             } catch (erro) {
-                console.error('Erro ao buscar IP:', erro);
-                ipElement.innerText = "Não foi possível detectar";
+                console.error('Erro na telemetria de IP/ISP:', erro);
+                ipElement.innerText = "Erro ao detectar";
                 ipElement.classList.add('text-rose-400');
+                ispElement.innerText = "Indisponível";
+                ispElement.classList.add('text-slate-500');
             }
         }
 
-        // 2. FUNÇÃO PARA LER O JSON E MONTAR OS CARDS DINAMICAMENTE
+        // 2. TELEMETRIA: CÁLCULO DE LATÊNCIA REAL (PING EM MS)
+        async function calcularPing() {
+            const pingElement = document.getElementById('user-ping');
+            const urlTeste = 'ferramentas.json'; // Arquivo leve local no servidor git
+            const tempos = [];
+
+            // Executa 3 medições para tirar uma média realista (limpa picos isolados)
+            for (let i = 0; i < 3; i++) {
+                const inicio = performance.now();
+                try {
+                    // Adiciona um parâmetro dinâmico para estourar o cache do navegador (cache bust)
+                    await fetch(`${urlTeste}?t=${Date.now()}-${i}`, { cache: 'no-store' });
+                    const fim = performance.now();
+                    tempos.push(fim - inicio);
+                } catch (e) {
+                    console.error('Erro no pacote de teste de ping:', e);
+                }
+            }
+
+            if (tempos.length > 0) {
+                const mediaPing = Math.round(tempos.reduce((a, b) => a + b, 0) / tempos.length);
+                pingElement.innerText = `${mediaPing} ms`;
+                
+                // Colorização dinâmica baseada no atraso de propagação
+                if (mediaPing < 50) {
+                    pingElement.className = "text-emerald-400 font-bold block"; // Excelente
+                } else if (mediaPing < 120) {
+                    pingElement.className = "text-amber-400 font-bold block";   // Médio
+                } else {
+                    pingElement.className = "text-rose-400 font-bold block";    // Alto
+                }
+            } else {
+                pingElement.innerText = "Erro";
+                pingElement.className = "text-rose-500 font-bold block";
+            }
+        }
+
+        // 3. ARQUITETURA: CARREGAMENTO DINÂMICO DOS CARDS DO JSON
         async function carregarFerramentas() {
-			const grid = document.getElementById('grid-ferramentas');
-			try {
-				// Faz o fetch no arquivo local ferramentas.json
-				const resposta = await fetch('ferramentas.json');
-				if (!resposta.ok) throw new Error('Arquivo JSON não encontrado');
-        
-				const ferramentas = await resposta.json();
-        
-				// Limpa o esqueleto de carregamento
-				grid.innerHTML = '';
-
-				if(ferramentas.length === 0) {
-				grid.innerHTML = '<p class="text-slate-500 font-mono col-span-full">Nenhuma ferramenta homologada no momento.</p>';
-				return;
-				}
-
-				// Loop para criar a estrutura visual de cada ferramenta do JSON
-				ferramentas.forEach(item => {
-					const card = document.createElement('a');
-					card.href = item.url;
-					card.className = "group block bg-slate-950/40 hover:bg-slate-950/80 border border-slate-800 hover:border-cyan-500/50 rounded-xl p-6 transition-all duration-300 shadow-lg hover:shadow-cyan-500/5 hover:-translate-y-1 flex flex-col justify-between h-48";
+            const grid = document.getElementById('grid-ferramentas');
+            let resposta;
             
-					// ATENÇÃO: Certifique-se de que a linha abaixo começa com CRASE ( ` ) e termina com CRASE ( ` )
-					card.innerHTML = `
-						<div>
-							<div class="flex items-center justify-between mb-3">
-								<span class="text-xs font-mono px-2 py-1 rounded bg-slate-800 text-slate-400 border border-slate-700/50 group-hover:text-cyan-300 group-hover:border-cyan-500/30 transition-colors">
-									${item.categoria}
-								</span>
-								<span class="text-slate-600 group-hover:text-cyan-400 transition-colors font-mono text-sm">&lt;/&gt;</span>
-							</div>
-							<h3 class="text-lg font-bold text-slate-200 group-hover:text-white transition-colors">
-								${item.titulo}
-							</h3>
-							<p class="text-sm text-slate-400 mt-2 line-clamp-2">
-								${item.descricao}
-							</p>
-						</div>
-						<div class="text-xs font-mono text-cyan-500 font-semibold mt-4 flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
-							Acessar console 
-							<span class="transform group-hover:translate-x-1 transition-transform">&rarr;</span>
-						</div>
-					`;
-					grid.appendChild(card);
-				});
+            try {
+                resposta = await fetch('ferramentas.json');
+                if (!resposta.ok) {
+                    resposta = await fetch('ferramentas.json.json');
+                }
+                if (!resposta.ok) throw new Error('Arquivo JSON de ferramentas não localizado.');
+                
+                const ferramentas = await resposta.json();
+                grid.innerHTML = '';
 
-			} catch (erro) {
-				console.error('Erro ao processar a arquitetura do hub:', erro);
-				grid.innerHTML = `
-					<div class="col-span-full bg-rose-950/20 border border-rose-900/50 rounded-lg p-4 text-rose-300 font-mono text-sm text-center">
-						ERRO [0x01]: Falha ao carregar a matriz de ferramentas (ferramentas.json). Certifique-se de que o arquivo foi criado na raiz e contém um JSON válido.
-					</div>
-				`;
-			}
-		}
+                if(ferramentas.length === 0) {
+                    grid.innerHTML = '<p class="text-slate-500 font-mono col-span-full">Nenhuma ferramenta homologada no momento.</p>';
+                    return;
+                }
 
-        // Executa as rotinas de inicialização do terminal assim que a página carrega
+                ferramentas.forEach(item => {
+                    const card = document.createElement('a');
+                    card.href = item.url;
+                    card.className = "group block bg-slate-950/40 hover:bg-slate-950/80 border border-slate-800 hover:border-cyan-500/50 rounded-xl p-6 transition-all duration-300 shadow-lg hover:shadow-cyan-500/5 hover:-translate-y-1 flex flex-col justify-between h-48";
+                    
+                    card.innerHTML = `
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <span class="text-xs font-mono px-2 py-1 rounded bg-slate-800 text-slate-400 border border-slate-700/50 group-hover:text-cyan-300 group-hover:border-cyan-500/30 transition-colors">
+                                    ${item.categoria}
+                                </span>
+                                <span class="text-slate-600 group-hover:text-cyan-400 transition-colors font-mono text-sm">&lt;/&gt;</span>
+                            </div>
+                            <h3 class="text-lg font-bold text-slate-200 group-hover:text-white transition-colors">
+                                ${item.titulo}
+                            </h3>
+                            <p class="text-sm text-slate-400 mt-2 line-clamp-2">
+                                ${item.descricao}
+                            </p>
+                        </div>
+                        <div class="text-xs font-mono text-cyan-500 font-semibold mt-4 flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
+                            Acessar console 
+                            <span class="transform group-hover:translate-x-1 transition-transform">&rarr;</span>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+
+            } catch (erro) {
+                console.error('Erro ao processar a arquitetura do hub:', erro);
+                grid.innerHTML = `
+                    <div class="col-span-full bg-rose-950/20 border border-rose-900/50 rounded-lg p-4 text-rose-300 font-mono text-sm text-center">
+                        ERRO [0x01]: Falha ao carregar a matriz de ferramentas (ferramentas.json).
+                    </div>
+                `;
+            }
+        }
+
+        // Execução paralela das rotinas ao carregar a janela
         window.addEventListener('DOMContentLoaded', () => {
-            buscarIP();
+            coletarDadosRede();
+            calcularPing();
             carregarFerramentas();
         });
     </script>
