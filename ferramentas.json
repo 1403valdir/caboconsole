@@ -1,0 +1,16 @@
+[
+  {
+    "id": "sla",
+    "titulo": "Calculadora de SLA e Uptime",
+    "descricao": "Calcule métricas exatas de disponibilidade e tempos máximos de queda permitidos por contrato (anuais, mensais e diários).",
+    "url": "ferramentas/calculadora-sla/index.html",
+    "categoria": "Monitoramento"
+  },
+  {
+    "id": "subrede",
+    "titulo": "Calculadora de Sub-rede IPv4",
+    "descricao": "Divisão cirúrgica de blocos IP. Obtenha máscaras CIDR, primeiro/último host válido, IPs de rede e de broadcast instantaneamente.",
+    "url": "ferramentas/calculadora-subrede/index.html",
+    "categoria": "Roteamento"
+  }
+]

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Sub-rede IPv4 - Cabo Console</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen font-sans">
+
+    <nav class="border-b border-slate-800 bg-slate-950/50 backdrop-blur">
+        <div class="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
+            <a href="../../index.html" class="text-sm font-mono text-slate-400 hover:text-cyan-400 transition-colors flex items-center gap-2">
+                &larr; Voltar ao Hub
+            </a>
+            <span class="text-xs font-mono text-slate-600">CABO CONSOLE // CONSOLE_IP_CALC</span>
+        </div>
+    </nav>
+
+    <main class="max-w-5xl mx-auto px-4 py-10">
+        
+        <div class="mb-10">
+            <span class="text-xs font-mono text-cyan-400 uppercase tracking-wider">Módulo de Roteamento</span>
+            <h1 class="text-3xl font-bold text-slate-100 mt-1">Calculadora de Sub-rede IPv4</h1>
+            <p class="text-slate-400 text-sm mt-2">Insira o endereço IP e selecione o CIDR correspondente para realizar a divisão binária do bloco.</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <div class="bg-slate-950/40 border border-slate-800 rounded-xl p-6 shadow-xl h-fit">
+                <h2 class="text-base font-bold text-slate-300 font-mono mb-4 border-b border-slate-800 pb-2">&gt;_ Inputs</h2>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-mono uppercase tracking-wider text-slate-400 mb-2">Endereço IP</label>
+                        <input type="text" id="ip-input" value="192.168.1.1" placeholder="Ex: 10.0.0.1" 
+                               class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 font-mono text-cyan-400 focus:outline-none focus:border-cyan-500 transition-colors">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-mono uppercase tracking-wider text-slate-400 mb-2">Máscara CIDR</label>
+                        <select id="cidr-input" class="w-full bg-slate-900 border border-slate-700 rounded p-2.5 font-mono text-slate-200 focus:outline-none focus:border-cyan-500 transition-colors">
+                            </select>
+                    </div>
+
+                    <button onclick="processarSubrede()" class="w-full bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold py-2.5 px-4 rounded transition-colors font-mono uppercase tracking-wider text-sm cursor-pointer">
+                        Calcular
+                    </button>
+                </div>
+            </div>
+
+            <div class="lg:col-span-2 bg-slate-950/20 border border-slate-800 rounded-xl p-6 shadow-xl">
+                <h2 class="text-base font-bold text-slate-300 font-mono mb-4 border-b border-slate-800 pb-2">&gt;_ Resultados Analisados</h2>
+                
+                <div id="resultado-painel" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <p class="text-slate-500 font-mono col-span-full text-sm">Aguardando parâmetros de entrada...</p>
+                </div>
+            </div>
+
+        </div>
+
+        <section class="mt-16 border-t border-slate-800 pt-10">
+            <h3 class="text-lg font-bold text-slate-300 font-mono mb-4">Como funciona o cálculo de sub-rede?</h3>
+            <div class="text-sm text-slate-400 space-y-4 max-w-4xl leading-relaxed">
+                <p>A divisão de sub-redes IPv4 consiste em segmentar uma rede física ou lógica em redes menores. Esse processo otimiza a alocação de endereços IP e melhora a segurança e performance da infraestrutura de roteamento, limitando o tráfego de broadcast dentro de domínios específicos.</p>
+                <p>O cálculo utiliza a operação lógica **AND** binária entre o endereço IP do host e a máscara de sub-rede para determinar o endereço exato da rede. A quantidade de bits reservados para o host define a quantidade total de endereços IP disponíveis, subtraindo sempre dois endereços da contagem final: o identificador da própria rede e o endereço de broadcast (usado para comunicação interna direta com todos os nós daquela sub-rede).</p>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="border-t border-slate-800 mt-20 bg-slate-950/30">
+        <div class="max-w-5xl mx-auto px-4 py-6 text-center text-xs text-slate-500 font-mono">
+            &copy; 2026 Cabo Console. Engenharia de Redes sem firulas.
+        </div>
+    </footer>
+
+    <script>
+        // Popula o select de CIDR de /1 até /32 na inicialização
+        const selectCidr = document.getElementById('cidr-input');
+        for (let i = 24; i >= 1; i--) adicionarOpcaoCidr(i); // Começa no /24 por ser o padrão mais comum
+        for (let i = 25; i <= 32; i++) adicionarOpcaoCidr(i);
+
+        function adicionarOpcaoCidr(val) {
+            const opt = document.createElement('option');
+            opt.value = val;
+            opt.innerText = `/${val}`;
+            if(val === 24) opt.selected = true;
+            selectCidr.appendChild(opt);
+        }
+
+        // Converte string IP (X.X.X.X) para inteiro de 32 bits
+        function ipParaLong(ip) {
+            return ip.split('.').reduce((acc, octeto) => (acc << 8) + parseInt(octeto, 10), 0) >>> 0;
+        }
+
+        // Converte inteiro de 32 bits de volta para string IP
+        function longParaIp(long) {
+            return [
+                (long >>> 24) & 255,
+                (long >>> 16) & 255,
+                (long >>> 8) & 255,
+                long & 255
+            ].join('.');
+        }
+
+        function processarSubrede() {
+            const ipStr = document.getElementById('ip-input').value.trim();
+            const cidr = parseInt(document.getElementById('cidr-input').value, 10);
+            const painel = document.getElementById('resultado-painel');
+
+            // Validação simples de regex para o formato IPv4
+            const ipRegex = /^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+            if (!ipRegex.test(ipStr)) {
+                painel.innerHTML = `<p class="text-rose-400 font-mono col-span-full text-sm">ERRO: Endereço IPv4 inválido ou mal formatado.</p>`;
+                return;
+            }
+
+            const ipLong = ipParaLong(ipStr);
+            
+            // Calcula a máscara de sub-rede
+            const mascaraLong = cidr === 0 ? 0 : (~0 << (32 - cidr)) >>> 0;
+            
+            // Calcula endereço da rede e broadcast
+            const redeLong = (ipLong & mascaraLong) >>> 0;
+            const broadcastLong = (redeLong | ~mascaraLong) >>> 0;
+
+            // Calcula escopo de hosts válidos e totalizador
+            let primeiroHost = longParaIp(redeLong + 1);
+            let ultimoHost = longParaIp(broadcastLong - 1);
+            let totalHosts = Math.pow(2, 32 - cidr) - 2;
+
+            // Casos especiais RFC 3021 (/31 e /32)
+            if (cidr === 31) {
+                primeiroHost = longParaIp(redeLong);
+                ultimoHost = longParaIp(broadcastLong);
+                totalHosts = 2;
+            } else if (cidr === 32) {
+                primeiroHost = longParaIp(ipLong);
+                ultimoHost = longParaIp(ipLong);
+                totalHosts = 1;
+            }
+
+            // Injeta o resultado tabulado com estilo no painel
+            const dadosGrid = [
+                { label: "Endereço da Rede", valor: longParaIp(redeLong), desc: "Network ID" },
+                { label: "Máscara de Rede", valor: longParaIp(mascaraLong), desc: "Subnet Mask" },
+                { label: "Primeiro Host Válido", valor: primeiroHost, desc: "Gateway sugerido" },
+                { label: "Último Host Válido", valor: ultimoHost, desc: "Fim do escopo útil" },
+                { label: "Endereço de Broadcast", valor: longParaIp(broadcastLong), desc: "Endereço de difusão" },
+                { label: "Hosts Utilizáveis", valor: totalHosts.toLocaleString('pt-BR'), desc: "Capacidade de nós úteis" }
+            ];
+
+            painel.innerHTML = '';
+            dadosGrid.forEach(dado => {
+                painel.innerHTML += `
+                    <div class="bg-slate-900 border border-slate-800 p-4 rounded-lg flex flex-col justify-between">
+                        <div>
+                            <span class="text-xs font-mono text-slate-500 uppercase tracking-wider block">${dado.label}</span>
+                            <strong class="text-lg font-mono text-cyan-400 block mt-1 tracking-wide">${dado.valor}</strong>
+                        </div>
+                        <span class="text-xs font-mono text-slate-600 mt-2 block italic">// ${dado.desc}</span>
+                    </div>
+                `;
+            });
+        }
+
+        // Executa o primeiro cálculo ao abrir a tela
+        window.addEventListener('DOMContentLoaded', processarSubrede);
+    </script>
+</body>
+</html>
