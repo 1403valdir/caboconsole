@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cabo Console - Portal de Utilitários de Redes</title>
+	<link rel="icon" type="image/png" href="favicon.png">
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen font-sans flex flex-col justify-between">
@@ -84,35 +85,37 @@
     <script>
         // 1. TELEMETRIA: BUSCA IP E PROVEDOR (ISP)
         async function coletarDadosRede() {
-            const ipElement = document.getElementById('user-ip');
-            const ispElement = document.getElementById('user-isp');
-            
-            try {
-                // Utiliza a API do ip-api (gratuita e sem autenticação)
-                const resposta = await fetch('https://ip-api.com/json/?fields=status,message,query,isp,as');
-                if (!resposta.ok) throw new Error('Falha na API de telemetria');
-                
-                const dados = await resposta.json();
-                
-                if (dados.status === 'success') {
-                    ipElement.innerText = dados.query;
-                    ipElement.classList.add('text-cyan-400');
-                    
-                    // Exibe o Nome do Provedor + ASN simplificado
-                    const asn = dados.as ? dados.as.split(' ')[0] : '';
-                    ispElement.innerText = `${dados.isp} ${asn}`.trim();
-                    ispElement.classList.add('text-cyan-400');
-                } else {
-                    throw new Error(dados.message);
-                }
-            } catch (erro) {
-                console.error('Erro na telemetria de IP/ISP:', erro);
-                ipElement.innerText = "Erro ao detectar";
-                ipElement.classList.add('text-rose-400');
-                ispElement.innerText = "Indisponível";
-                ispElement.classList.add('text-slate-500');
-            }
-        }
+			const ipElement = document.getElementById('user-ip');
+			const ispElement = document.getElementById('user-isp');
+			
+			try {
+				// Utiliza a API ipapi.co que suporta HTTPS nativo e gratuito
+				const resposta = await fetch('https://ipapi.co/json/');
+				if (!resposta.ok) throw new Error('Falha na API de telemetria HTTPS');
+        
+				const dados = await resposta.json();
+				
+				if (dados.ip) {
+					// Atualiza o IP na tela
+					ipElement.innerText = dados.ip;
+					ipElement.className = "text-sm font-bold text-cyan-400 tracking-wide";
+					
+					// Monta Provedor + ASN (ex: Claro S.A. AS28573)
+					const org = dados.org || "Desconhecido";
+					const asn = dados.asn || "";
+					ispElement.innerText = `${org} ${asn}`.trim();
+					ispElement.className = "text-cyan-400 font-medium truncate max-w-[180px] block";
+				} else {
+					throw new Error('Dados incompletos recebidos');
+				}
+			} catch (erro) {
+				console.error('Erro na telemetria de IP/ISP via HTTPS:', erro);
+				ipElement.innerText = "Erro ao detectar";
+				ipElement.className = "text-sm font-bold text-rose-400 tracking-wide";
+				ispElement.innerText = "Indisponível";
+				ispElement.className = "text-slate-500 font-medium block";
+			}
+		}
 
         // 2. TELEMETRIA: CÁLCULO DE LATÊNCIA REAL (PING EM MS)
         async function calcularPing() {
