@@ -83,49 +83,61 @@
     </footer>
 
     <script>
-        // 1. TELEMETRIA: BUSCA IP E PROVEDOR (ISP)
-        // 1. TELEMETRIA: BUSCA IP E PROVEDOR COM INFRAESTRUTURA ABERTA HTTPS
+        // 1. TELEMETRIA: BUSCA IP E PROVEDOR (INFRAESTRUTURA AMBIENTE DE PRODUÇÃO)
 		async function coletarDadosRede() {
 			const ipElement = document.getElementById('user-ip');
 			const ispElement = document.getElementById('user-isp');
 			
 			try {
-				// ipwho.is fornece geolocalização e ASN nativo via HTTPS gratuito
-				const resposta = await fetch('https://ipwho.is/');
-				if (!resposta.ok) throw new Error('Falha na API principal');
-        
+				// ipinfo.io permite requisições client-side abertas em HTTPS nativo
+				const resposta = await fetch('https://ipinfo.io/json');
+				if (!resposta.ok) throw new Error('Falha no barramento primário');
+				
 				const dados = await resposta.json();
-        
-				if (dados.success) {
-					// Exibe o IP público
+				
+				if (dados.ip) {
+					// Insere o IP Público na primeira linha
 					ipElement.innerText = dados.ip;
 					ipElement.className = "text-sm font-bold text-cyan-400 tracking-wide";
 					
-					// Monta Provedor / ASN (Ex: Algar Telecom AS16735)
-					const provedor = dados.connection.isp || "Desconhecido";
-					const asn = dados.connection.asn || "";
+					// ipinfo entrega o Provedor e o ASN juntos na string "org" (ex: "AS16735 Algar Telecom S/A")
+					// Vamos apenas formatar para que o ASN fique no final se quiser manter o padrão anterior
+					let provedorFormatado = dados.org || "Desconhecido";
 					
-					ispElement.innerText = `${provedor} ${asn}`.trim();
+					if (provedorFormatado.startsWith("AS")) {
+						const partes = provedorFormatado.split(" ");
+						const asn = partes.shift(); // Remove e guarda o "ASXXXXX"
+						provedorFormatado = `${partes.join(" ")} (${asn})`; // Remonta: Operadora (ASXXXXX)
+					}
+            
+					ispElement.innerText = provedorFormatado;
 					ispElement.className = "text-cyan-400 font-medium truncate max-w-[180px] block";
 				} else {
-					throw new Error(dados.message || 'Falha ao mapear resposta');
+					throw new Error('Payload incorreto');
 				}
 			} catch (erro) {
-				console.error('Erro na telemetria de borda:', erro);
+				console.error('Erro na telemetria primária:', erro);
 				
-				// Failover secundário caso o ipwhois esteja instável na rede do usuário
+				// Rota de Contingência Física (Failover): Puxa apenas o IP via String Limpa da Cloudflare
 				try {
-					const resBackup = await fetch('https://api.ipify.org?format=json');
-					const dadosBackup = await resBackup.json();
+					const resBackup = await fetch('https://www.cloudflare.com/cdn-cgi/trace');
+					const textoBackup = await resBackup.text();
 					
-					ipElement.innerText = dadosBackup.ip;
-					ipElement.className = "text-sm font-bold text-cyan-400 tracking-wide";
-					ispElement.innerText = "Provedor Indisponível";
-					ispElement.className = "text-slate-500 font-medium block";
+					// Dá um parse manual nas linhas do tracer da Cloudflare para extrair o campo ip=
+					const linhas = textoBackup.split('\n');
+					const linhaIp = linhas.find(l => l.startsWith('ip='));
+            
+					if (linhaIp) {
+						const ipDescoberto = linhaIp.split('=')[1];
+						ipElement.innerText = ipDescoberto;
+						ipElement.className = "text-sm font-bold text-cyan-400 tracking-wide";
+						ispElement.innerText = "Provedor Privado";
+						ispElement.className = "text-slate-400 font-medium block";
+					}
 				} catch (e) {
 					ipElement.innerText = "Erro ao detectar";
 					ipElement.className = "text-sm font-bold text-rose-400 tracking-wide";
-					ispElement.innerText = "Serviço Offline";
+					ispElement.innerText = "Console Offline";
 					ispElement.className = "text-slate-500 font-medium block";
 				}
 			}
