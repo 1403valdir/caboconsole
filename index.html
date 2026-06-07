@@ -88,32 +88,61 @@
 			const ipElement = document.getElementById('user-ip');
 			const ispElement = document.getElementById('user-isp');
 			
+			// Rota Primária: Usar a infraestrutura global da Cloudflare/Ipify (Apenas para o IP)
 			try {
-				// Utiliza a API ipapi.co que suporta HTTPS nativo e gratuito
-				const resposta = await fetch('https://ipapi.co/json/');
-				if (!resposta.ok) throw new Error('Falha na API de telemetria HTTPS');
-        
-				const dados = await resposta.json();
+				const respostaIp = await fetch('https://api.ipify.org?format=json');
+				if (!respostaIp.ok) throw new Error('Falha no Provedor Primário');
 				
-				if (dados.ip) {
-					// Atualiza o IP na tela
-					ipElement.innerText = dados.ip;
+				const dadosIp = await respostaIp.json();
+				const ipPublico = dadosIp.ip;
+				
+				// Exibe o IP imediatamente na tela
+				ipElement.innerText = ipPublico;
+				ipElement.className = "text-sm font-bold text-cyan-400 tracking-wide";
+				
+				// Agora busca a operadora usando o IP descoberto (evita bloqueio de HTTPS misto)
+				try {
+					const respostaIsp = await fetch(`https://ipapi.co/${ipPublico}/json/`);
+					const dadosIsp = await respostaIsp.json();
+					
+					if (dadosIsp.org) {
+						const asn = dadosIsp.asn || "";
+						ispElement.innerText = `${dadosIsp.org} ${asn}`.trim();
+						ispElement.className = "text-cyan-400 font-medium truncate max-w-[180px] block";
+						return; // Sucesso total!
+					}
+				} catch (e) {
+					console.warn('Falha ao puxar ISP primário, tentando contingência...');
+				}
+        
+				// Se falhar o ISP, deixa o IP e tenta puxar a Org de outra forma
+				ispElement.innerText = "Buscando Provedor...";
+        
+			} catch (erroPrimario) {
+				console.error('Rota primária falhou. Acionando contingência de infraestrutura...', erroPrimario);
+				
+				// Rota de Contingência (Backup): Usa uma API alternativa direta
+				try {
+					const respostaBackup = await fetch('https://ipinfo.io/json?token='); // Fallback público limpo
+					if (!respostaBackup.ok) throw new Error('Failover também falhou');
+					
+					const dadosBackup = await respostaBackup.json();
+					
+					ipElement.innerText = dadosBackup.ip;
 					ipElement.className = "text-sm font-bold text-cyan-400 tracking-wide";
 					
-					// Monta Provedor + ASN (ex: Claro S.A. AS28573)
-					const org = dados.org || "Desconhecido";
-					const asn = dados.asn || "";
-					ispElement.innerText = `${org} ${asn}`.trim();
+					ispElement.innerText = dadosBackup.org || "Detectado";
 					ispElement.className = "text-cyan-400 font-medium truncate max-w-[180px] block";
-				} else {
-					throw new Error('Dados incompletos recebidos');
+					return;
+            
+				} catch (erroBackup) {
+					// Se absolutamente tudo falhar (ex: bloqueio estrito de AdBlocker no cliente)
+					console.error('Parada total na telemetria:', erroBackup);
+					ipElement.innerText = "Erro ao detectar";
+					ipElement.className = "text-sm font-bold text-rose-400 tracking-wide";
+					ispElement.innerText = "Serviço Limitado";
+					ispElement.className = "text-slate-500 font-medium block";
 				}
-			} catch (erro) {
-				console.error('Erro na telemetria de IP/ISP via HTTPS:', erro);
-				ipElement.innerText = "Erro ao detectar";
-				ipElement.className = "text-sm font-bold text-rose-400 tracking-wide";
-				ispElement.innerText = "Indisponível";
-				ispElement.className = "text-slate-500 font-medium block";
 			}
 		}
 
