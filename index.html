@@ -84,63 +84,48 @@
 
     <script>
         // 1. TELEMETRIA: BUSCA IP E PROVEDOR (ISP)
-        async function coletarDadosRede() {
+        // 1. TELEMETRIA: BUSCA IP E PROVEDOR COM INFRAESTRUTURA ABERTA HTTPS
+		async function coletarDadosRede() {
 			const ipElement = document.getElementById('user-ip');
 			const ispElement = document.getElementById('user-isp');
 			
-			// Rota Primária: Usar a infraestrutura global da Cloudflare/Ipify (Apenas para o IP)
 			try {
-				const respostaIp = await fetch('https://api.ipify.org?format=json');
-				if (!respostaIp.ok) throw new Error('Falha no Provedor Primário');
-				
-				const dadosIp = await respostaIp.json();
-				const ipPublico = dadosIp.ip;
-				
-				// Exibe o IP imediatamente na tela
-				ipElement.innerText = ipPublico;
-				ipElement.className = "text-sm font-bold text-cyan-400 tracking-wide";
-				
-				// Agora busca a operadora usando o IP descoberto (evita bloqueio de HTTPS misto)
-				try {
-					const respostaIsp = await fetch(`https://ipapi.co/${ipPublico}/json/`);
-					const dadosIsp = await respostaIsp.json();
+				// ipwho.is fornece geolocalização e ASN nativo via HTTPS gratuito
+				const resposta = await fetch('https://ipwho.is/');
+				if (!resposta.ok) throw new Error('Falha na API principal');
+        
+				const dados = await resposta.json();
+        
+				if (dados.success) {
+					// Exibe o IP público
+					ipElement.innerText = dados.ip;
+					ipElement.className = "text-sm font-bold text-cyan-400 tracking-wide";
 					
-					if (dadosIsp.org) {
-						const asn = dadosIsp.asn || "";
-						ispElement.innerText = `${dadosIsp.org} ${asn}`.trim();
-						ispElement.className = "text-cyan-400 font-medium truncate max-w-[180px] block";
-						return; // Sucesso total!
-					}
-				} catch (e) {
-					console.warn('Falha ao puxar ISP primário, tentando contingência...');
+					// Monta Provedor / ASN (Ex: Algar Telecom AS16735)
+					const provedor = dados.connection.isp || "Desconhecido";
+					const asn = dados.connection.asn || "";
+					
+					ispElement.innerText = `${provedor} ${asn}`.trim();
+					ispElement.className = "text-cyan-400 font-medium truncate max-w-[180px] block";
+				} else {
+					throw new Error(dados.message || 'Falha ao mapear resposta');
 				}
-        
-				// Se falhar o ISP, deixa o IP e tenta puxar a Org de outra forma
-				ispElement.innerText = "Buscando Provedor...";
-        
-			} catch (erroPrimario) {
-				console.error('Rota primária falhou. Acionando contingência de infraestrutura...', erroPrimario);
+			} catch (erro) {
+				console.error('Erro na telemetria de borda:', erro);
 				
-				// Rota de Contingência (Backup): Usa uma API alternativa direta
+				// Failover secundário caso o ipwhois esteja instável na rede do usuário
 				try {
-					const respostaBackup = await fetch('https://ipinfo.io/json?token='); // Fallback público limpo
-					if (!respostaBackup.ok) throw new Error('Failover também falhou');
-					
-					const dadosBackup = await respostaBackup.json();
+					const resBackup = await fetch('https://api.ipify.org?format=json');
+					const dadosBackup = await resBackup.json();
 					
 					ipElement.innerText = dadosBackup.ip;
 					ipElement.className = "text-sm font-bold text-cyan-400 tracking-wide";
-					
-					ispElement.innerText = dadosBackup.org || "Detectado";
-					ispElement.className = "text-cyan-400 font-medium truncate max-w-[180px] block";
-					return;
-            
-				} catch (erroBackup) {
-					// Se absolutamente tudo falhar (ex: bloqueio estrito de AdBlocker no cliente)
-					console.error('Parada total na telemetria:', erroBackup);
+					ispElement.innerText = "Provedor Indisponível";
+					ispElement.className = "text-slate-500 font-medium block";
+				} catch (e) {
 					ipElement.innerText = "Erro ao detectar";
 					ipElement.className = "text-sm font-bold text-rose-400 tracking-wide";
-					ispElement.innerText = "Serviço Limitado";
+					ispElement.innerText = "Serviço Offline";
 					ispElement.className = "text-slate-500 font-medium block";
 				}
 			}
