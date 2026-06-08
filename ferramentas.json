@@ -30,7 +30,7 @@
   },
   
   {
-    "titulo": "Saúde do Link & Peering",
+    "titulo": "Saúde do Link",
     "categoria": "Monitoramento",
     "descricao": "Análise de latência e RTT em tempo real para os principais CDNs, ASNs de operadoras, nuvens e serviços críticos trafegados no Brasil.",
     "url": "ferramentas/saude-link/index.html"
