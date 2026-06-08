@@ -27,5 +27,12 @@
     "categoria": "Roteamento",
     "descricao": "Coletânea de ferramentas Looking Glass de grandes operadoras e backbones (Claro, Cogent, Cirion, Eletronet e mais) para testes de BGP, MTR e rotas.",
     "url": "ferramentas/looking-glass/index.html"
+  },
+  
+  {
+    "titulo": "Saúde do Link & Peering",
+    "categoria": "Monitoramento",
+    "descricao": "Análise de latência e RTT em tempo real para os principais CDNs, ASNs de operadoras, nuvens e serviços críticos trafegados no Brasil.",
+    "url": "ferramentas/saude-link/index.html"
   }
 ]
