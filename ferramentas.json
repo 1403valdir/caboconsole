@@ -1,16 +1,31 @@
 [
   {
+    "id": "subrede",
+    "titulo": "Calculadora de Sub-rede IPv4",
+    "descricao": "Divisão cirúrgica de blocos IP. Obtenha máscaras CIDR, primeiro/último host válido, IPs de rede e de broadcast instantaneamente.",
+    "url": "ferramentas/calculadora-subrede/index.html",
+    "categoria": "Roteamento"
+  },
+  
+  {
     "id": "sla",
     "titulo": "Calculadora de SLA e Uptime",
     "descricao": "Calcule métricas exatas de disponibilidade e tempos máximos de queda permitidos por contrato (anuais, mensais e diários).",
     "url": "ferramentas/calculadora-sla/index.html",
     "categoria": "Monitoramento"
   },
+  
   {
-    "id": "subrede",
-    "titulo": "Calculadora de Sub-rede IPv4",
-    "descricao": "Divisão cirúrgica de blocos IP. Obtenha máscaras CIDR, primeiro/último host válido, IPs de rede e de broadcast instantaneamente.",
-    "url": "ferramentas/calculadora-subrede/index.html",
-    "categoria": "Roteamento"
+    "titulo": "Gerador de Senhas Seguras",
+    "categoria": "Segurança",
+    "descricao": "Utilitário para geração de credenciais fortes e aleatórias baseadas em entropy, com controle de caracteres especiais, números e tamanho.",
+    "url": "ferramentas/gerador-senha/index.html"
+  },
+  
+  {
+    "titulo": "Looking Glass Hub",
+    "categoria": "Roteamento",
+    "descricao": "Coletânea de ferramentas Looking Glass de grandes operadoras e backbones (Claro, Cogent, Cirion, Eletronet e mais) para testes de BGP, MTR e rotas.",
+    "url": "ferramentas/looking-glass/index.html"
   }
 ]

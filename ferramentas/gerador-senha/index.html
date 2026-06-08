@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Senhas Seguras - Cabo Console</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen font-sans p-6">
+    <div class="max-w-md mx-auto bg-slate-950/40 border border-slate-800 rounded-xl p-6 shadow-xl mt-12">
+        <a href="../../index.html" class="text-xs font-mono text-cyan-400 hover:underline">&larr; Voltar ao Console</a>
+        <h1 class="text-xl font-bold font-mono text-cyan-400 mt-4 mb-4">&gt;_ GERADOR DE CREDENCIAIS</h1>
+        
+        <div class="bg-slate-900 border border-slate-800 rounded p-3 mb-4 flex justify-between items-center font-mono text-sm break-all">
+            <span id="senha-resultado" class="text-emerald-400 tracking-wide font-bold">Selecione as opções...</span>
+            <button onclick="copiarSenha()" class="text-xs bg-slate-800 hover:bg-cyan-950 text-slate-300 hover:text-cyan-400 px-2 py-1 rounded transition-colors ml-2 cursor-pointer">Copiar</button>
+        </div>
+
+        <div class="space-y-3 font-mono text-xs">
+            <div>
+                <label class="text-slate-400 block mb-1">Tamanho da senha: <span id="comprimento-val">16</span> caracteres</label>
+                <input type="range" id="comprimento" min="8" max="32" value="16" class="w-full accent-cyan-400" oninput="document.getElementById('comprimento-val').innerText = this.value; gerarSenha();">
+            </div>
+            <label class="flex items-center gap-2 text-slate-300 cursor-pointer">
+                <input type="checkbox" id="maiusculas" checked class="accent-cyan-400" onchange="gerarSenha()"> Letras Maiúsculas (A-Z)
+            </label>
+            <label class="flex items-center gap-2 text-slate-300 cursor-pointer">
+                <input type="checkbox" id="minusculas" checked class="accent-cyan-400" onchange="gerarSenha()"> Letras Minúsculas (a-z)
+            </label>
+            <label class="flex items-center gap-2 text-slate-300 cursor-pointer">
+                <input type="checkbox" id="numeros" checked class="accent-cyan-400" onchange="gerarSenha()"> Números (0-9)
+            </label>
+            <label class="flex items-center gap-2 text-slate-300 cursor-pointer">
+                <input type="checkbox" id="especiais" checked class="accent-cyan-400" onchange="gerarSenha()"> Caracteres Especiais (!@#$%^&*)
+            </label>
+        </div>
+
+        <button onclick="gerarSenha()" class="w-full mt-6 bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold font-mono py-2 rounded transition-colors text-sm cursor-pointer">
+            GERAR NOVA SENHA
+        </button>
+    </div>
+
+    <script>
+        function gerarSenha() {
+            const comprimento = document.getElementById('comprimento').value;
+            const usarMaiusculas = document.getElementById('maiusculas').checked;
+            const usarMinusculas = document.getElementById('minusculas').checked;
+            const usarNumeros = document.getElementById('numeros').checked;
+            const usarEspeciais = document.getElementById('especiais').checked;
+
+            let caracteres = '';
+            if (usarMaiusculas) caracteres += 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+            if (usarMinusculas) caracteres += 'abcdefghijklmnopqrstuvwxyz';
+            if (usarNumeros) caracteres += '0123456789';
+            if (usarEspeciais) caracteres += '!@#$%^&*()_+~`|}{[]:;?><,./-===';
+
+            if (caracteres === '') {
+                document.getElementById('senha-resultado').innerText = 'Ative uma opção!';
+                return;
+            }
+
+            let senha = '';
+            // Substituição do Math.random por criptografia nativa de borda para segurança real
+            const valoresAleatorios = new Uint32Array(comprimento);
+            window.crypto.getRandomValues(valoresAleatorios);
+            
+            for (let i = 0; i < comprimento; i++) {
+                senha += caracteres.charAt(valoresAleatorios[i] % caracteres.length);
+            }
+            document.getElementById('senha-resultado').innerText = senha;
+        }
+
+        function copiarSenha() {
+            const senhaText = document.getElementById('senha-resultado').innerText;
+            if(senhaText === 'Ative uma opção!' || senhaText === 'Selecione as opções...') return;
+            navigator.clipboard.writeText(senhaText);
+        }
+
+        // Auto-inicializa na primeira carga
+        window.addEventListener('DOMContentLoaded', gerarSenha);
+    </script>
+</body>
+</html>
