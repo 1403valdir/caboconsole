@@ -16,6 +16,13 @@
   },
   
   {
+    "titulo": "Conversor de Bases Numéricas",
+    "categoria": "Utilitários",
+    "descricao": "Conversão bidirecional e simultânea entre sistemas Binário, Hexadecimal e Decimal, ideal para análise de pacotes e escopos de rede.",
+    "url": "ferramentas/conversor-bases/index.html"
+  },
+  
+  {
     "titulo": "Gerador de Senhas Seguras",
     "categoria": "Segurança",
     "descricao": "Utilitário para geração de credenciais fortes e aleatórias baseadas em entropy, com controle de caracteres especiais, números e tamanho.",

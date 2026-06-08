@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conversor de Bases Numéricas - Cabo Console</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen font-sans p-6">
+    <div class="max-w-3xl mx-auto">
+        <a href="../../index.html" class="text-xs font-mono text-cyan-400 hover:underline">&larr; Voltar ao Console</a>
+        
+        <div class="mt-4 mb-6 border-b border-slate-800 pb-4">
+            <h1 class="text-2xl font-bold font-mono text-cyan-400">&gt;_ CONVERSOR DE BASES NUMÉRICAS</h1>
+            <p class="text-slate-400 text-sm">Conversão reativa simultânea entre Decimal, Hexadecimal e Binário.</p>
+        </div>
+
+        <div class="bg-slate-950/40 border border-slate-800 rounded-xl p-6 shadow-lg space-y-6 font-mono">
+            
+            <div>
+                <label class="block text-xs text-slate-400 uppercase tracking-wider mb-2">Decimal (Base 10)</label>
+                <input type="text" id="input-decimal" oninput="converter('decimal')" 
+                       placeholder="Ex: 255" 
+                       class="w-full bg-slate-900 border border-slate-800 rounded px-3 py-2 text-cyan-400 font-bold focus:outline-none focus:border-cyan-500 transition-colors">
+                <span id="err-decimal" class="text-[10px] text-rose-500 hidden mt-1">Apenas números de 0 a 9 são permitidos.</span>
+            </div>
+
+            <div>
+                <label class="block text-xs text-slate-400 uppercase tracking-wider mb-2">Hexadecimal (Base 16)</label>
+                <input type="text" id="input-hex" oninput="converter('hex')" 
+                       placeholder="Ex: FF" 
+                       class="w-full bg-slate-900 border border-slate-800 rounded px-3 py-2 text-cyan-400 font-bold focus:outline-none focus:border-cyan-500 transition-colors uppercase">
+                <span id="err-hex" class="text-[10px] text-rose-500 hidden mt-1">Caracteres inválidos para Hexadecimal (Use 0-9, A-F).</span>
+            </div>
+
+            <div>
+                <label class="block text-xs text-slate-400 uppercase tracking-wider mb-2">Binário (Base 2)</label>
+                <input type="text" id="input-bin" oninput="converter('bin')" 
+                       placeholder="Ex: 11111111" 
+                       class="w-full bg-slate-900 border border-slate-800 rounded px-3 py-2 text-cyan-400 font-bold focus:outline-none focus:border-cyan-500 transition-colors">
+                <span id="err-bin" class="text-[10px] text-rose-500 hidden mt-1">Apenas caracteres 0 e 1 são permitidos em binário.</span>
+            </div>
+
+            <div class="flex justify-end pt-2">
+                <button onclick="limparCampos()" class="text-xs border border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-900 px-4 py-2 rounded transition-colors cursor-pointer">
+                    LIMPAR CAMPOS
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function converter(origem) {
+            const decEl = document.getElementById('input-decimal');
+            const hexEl = document.getElementById('input-hex');
+            const binEl = document.getElementById('input-bin');
+
+            // Resetar mensagens de erro ocultas por padrão
+            document.querySelectorAll('[id^="err-"]').forEach(el => el.classList.add('hidden'));
+
+            let valorStr = '';
+            let numDecimal = NaN;
+
+            if (origem === 'decimal') {
+                valorStr = decEl.value.trim();
+                if (valorStr === '') return limpaSaidas([hexEl, binEl]);
+                
+                if (!/^\d+$/.test(valorStr)) {
+                    document.getElementById('err-decimal').classList.remove('hidden');
+                    return limpaSaidas([hexEl, binEl]);
+                }
+                numDecimal = parseInt(valorStr, 10);
+            } 
+            
+            else if (origem === 'hex') {
+                valorStr = hexEl.value.trim().toUpperCase();
+                if (valorStr === '') return limpaSaidas([decEl, binEl]);
+                
+                if (!/^[0-9A-F]+$/.test(valorStr)) {
+                    document.getElementById('err-hex').classList.remove('hidden');
+                    return limpaSaidas([decEl, binEl]);
+                }
+                numDecimal = parseInt(valorStr, 16);
+            } 
+            
+            else if (origem === 'bin') {
+                valorStr = binEl.value.trim().replace(/\s+/g, ''); // Ignora espaços se houver agrupamento
+                if (valorStr === '') return limpaSaidas([decEl, hexEl]);
+                
+                if (!/^[01]+$/.test(valorStr)) {
+                    document.getElementById('err-bin').classList.remove('hidden');
+                    return limpaSaidas([decEl, hexEl]);
+                }
+                numDecimal = parseInt(valorStr, 2);
+            }
+
+            // Se o número for válido, atualiza os campos de destino de forma cruzada
+            if (!isNaN(numDecimal)) {
+                if (origem !== 'decimal') decEl.value = numDecimal.toString(10);
+                if (origem !== 'hex') hexEl.value = numDecimal.toString(16).toUpperCase();
+                if (origem !== 'bin') binEl.value = formataBinario(numDecimal.toString(2));
+            }
+        }
+
+        // Divide o binário em blocos de 4 bits para facilitar a leitura técnica (Ex: 1100 1010)
+        function formataBinario(binStr) {
+            return binStr.replace(/\s/g, '').replace(/(?=(?:\d{4})+(?!\d))/g, ' ');
+        }
+
+        function limpaSaidas(elementos) {
+            elementos.forEach(el => el.value = '');
+        }
+
+        function limparCampos() {
+            document.getElementById('input-decimal').value = '';
+            document.getElementById('input-hex').value = '';
+            document.getElementById('input-bin').value = '';
+            document.querySelectorAll('[id^="err-"]').forEach(el => el.classList.add('hidden'));
+        }
+    </script>
+</body>
+</html>
