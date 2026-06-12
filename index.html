@@ -98,291 +98,291 @@
     </footer>
 
 	<script>
-      // Configurações Globais dos nós NTP para a Sidebar
-      const nosNTP = [
-          { nome: "a.st1.ntp.br", url: "https://a.st1.ntp.br/favicon.ico", label: "NIC.br Atômico" },
-          { nome: "gps.ntp.br", url: "https://gps.ntp.br/favicon.ico", label: "Estrato 1 GPS" },
-          { nome: "time.google.com", url: "https://time.google.com/generate_204", label: "Google Cache" },
-          { nome: "time.cloudflare.com", url: "https://time.cloudflare.com/", label: "Cloudflare Edge" }
-      ];
+    // Configurações Globais dos nós NTP para a Sidebar (Endpoints validados para bypass de CORS)
+	const nosNTP = [
+		{ nome: "a.st1.ntp.br", url: "https://www.ntp.br/favicon.ico", label: "NIC.br Atômico" },
+		{ nome: "gps.ntp.br", url: "https://www.ntp.br/favicon.ico", label: "Estrato 1 GPS" },
+		{ nome: "time.google.com", url: "https://time.google.com/generate_204", label: "Google Cache" },
+		{ nome: "time.cloudflare.com", url: "https://1.1.1.1/cdn-cgi/trace", label: "Cloudflare Edge" }
+	];
 
-      // 1. TELEMETRIA: BUSCA IP E PROVEDOR (Seu original)
-      async function coletarDadosRede() {
-          const ipElement = document.getElementById('user-ip');
-          const ispElement = document.getElementById('user-isp');
-          
-          try {
-              const resposta = await fetch('https://ipinfo.io/json');
-              if (!resposta.ok) throw new Error('Falha no barramento primário');
-              
-              const dados = await resposta.json();
-              
-              if (dados.ip) {
-                  ipElement.innerText = dados.ip;
-                  ipElement.className = "text-sm font-bold text-cyan-400 tracking-wide";
-                  
-                  let provedorFormatado = dados.org || "Desconhecido";
-                  if (provedorFormatado.startsWith("AS")) {
-                      const partes = provedorFormatado.split(" ");
-                      const asn = partes.shift();
-                      provedorFormatado = `${partes.join(" ")} (${asn})`;
-                  }
-          
-                  ispElement.innerText = provedorFormatado;
-                  ispElement.className = "text-cyan-400 font-medium truncate max-w-[180px] block";
-              } else {
-                  throw new Error('Payload incorreto');
-              }
-          } catch (erro) {
-              console.error('Erro na telemetria primária:', erro);
-              try {
-                  const resBackup = await fetch('https://www.cloudflare.com/cdn-cgi/trace');
-                  const textoBackup = await resBackup.text();
-                  const linhas = textoBackup.split('\n');
-                  const linhaIp = linhas.find(l => l.startsWith('ip='));
-          
-                  if (linhaIp) {
-                      const ipDescoberto = linhaIp.split('=')[1];
-                      ipElement.innerText = ipDescoberto;
-                      ipElement.className = "text-sm font-bold text-cyan-400 tracking-wide";
-                      ispElement.innerText = "Provedor Privado";
-                      ispElement.className = "text-slate-400 font-medium block";
-                  }
-              } catch (e) {
-                  ipElement.innerText = "Erro ao detectar";
-                  ipElement.className = "text-sm font-bold text-rose-400 tracking-wide";
-                  ispElement.innerText = "Console Offline";
-                  ispElement.className = "text-slate-500 font-medium block";
-              }
-          }
-      }
+    // 1. TELEMETRIA: BUSCA IP E PROVEDOR (Seu original)
+    async function coletarDadosRede() {
+        const ipElement = document.getElementById('user-ip');
+        const ispElement = document.getElementById('user-isp');
+        
+        try {
+            const resposta = await fetch('https://ipinfo.io/json');
+            if (!resposta.ok) throw new Error('Falha no barramento primário');
+            
+            const dados = await resposta.json();
+            
+            if (dados.ip) {
+                ipElement.innerText = dados.ip;
+                ipElement.className = "text-sm font-bold text-cyan-400 tracking-wide";
+                
+                let provedorFormatado = dados.org || "Desconhecido";
+                if (provedorFormatado.startsWith("AS")) {
+                    const partes = provedorFormatado.split(" ");
+                    const asn = partes.shift();
+                    provedorFormatado = `${partes.join(" ")} (${asn})`;
+                }
+        
+                ispElement.innerText = provedorFormatado;
+                ispElement.className = "text-cyan-400 font-medium truncate max-w-[180px] block";
+            } else {
+                throw new Error('Payload incorreto');
+            }
+        } catch (erro) {
+            console.error('Erro na telemetria primária:', erro);
+            try {
+                const resBackup = await fetch('https://www.cloudflare.com/cdn-cgi/trace');
+                const textoBackup = await resBackup.text();
+                const linhas = textoBackup.split('\n');
+                const linhaIp = linhas.find(l => l.startsWith('ip='));
+        
+                if (linhaIp) {
+                    const ipDescoberto = linhaIp.split('=')[1];
+                    ipElement.innerText = ipDescoberto;
+                    ipElement.className = "text-sm font-bold text-cyan-400 tracking-wide";
+                    ispElement.innerText = "Provedor Privado";
+                    ispElement.className = "text-slate-400 font-medium block";
+                }
+            } catch (e) {
+                ipElement.innerText = "Erro ao detectar";
+                ipElement.className = "text-sm font-bold text-rose-400 tracking-wide";
+                ispElement.innerText = "Console Offline";
+                ispElement.className = "text-slate-500 font-medium block";
+            }
+        }
+    }
 
-      // 2. TELEMETRIA: CÁLCULO DE LATÊNCIA REAL (Seu original)
-      async function calcularPing() {
-          const pingElement = document.getElementById('user-ping');
-          const urlTeste = 'ferramentas.json';
-          const tempos = [];
+    // 2. TELEMETRIA: CÁLCULO DE LATÊNCIA REAL (Seu original)
+    async function calcularPing() {
+        const pingElement = document.getElementById('user-ping');
+        const urlTeste = 'ferramentas.json';
+        const tempos = [];
 
-          for (let i = 0; i < 3; i++) {
-              const inicio = performance.now();
-              try {
-                  await fetch(`${urlTeste}?t=${Date.now()}-${i}`, { cache: 'no-store' });
-                  const fim = performance.now();
-                  tempos.push(fim - inicio);
-              } catch (e) {
-                  console.error('Erro no pacote de teste de ping:', e);
-              }
-          }
+        for (let i = 0; i < 3; i++) {
+            const inicio = performance.now();
+            try {
+                await fetch(`${urlTeste}?t=${Date.now()}-${i}`, { cache: 'no-store' });
+                const fim = performance.now();
+                tempos.push(fim - inicio);
+            } catch (e) {
+                console.error('Erro no pacote de teste de ping:', e);
+            }
+        }
 
-          if (tempos.length > 0) {
-              const mediaPing = Math.round(tempos.reduce((a, b) => a + b, 0) / tempos.length);
-              pingElement.innerText = `${mediaPing} ms`;
-              
-              if (mediaPing < 50) {
-                  pingElement.className = "text-emerald-400 font-bold block";
-              } else if (mediaPing < 120) {
-                  pingElement.className = "text-amber-400 font-bold block";
-              } else {
-                  pingElement.className = "text-rose-400 font-bold block";
-              }
-          } else {
-              pingElement.innerText = "Erro";
-              pingElement.className = "text-rose-500 font-bold block";
-          }
-      }
+        if (tempos.length > 0) {
+            const mediaPing = Math.round(tempos.reduce((a, b) => a + b, 0) / tempos.length);
+            pingElement.innerText = `${mediaPing} ms`;
+            
+            if (mediaPing < 50) {
+                pingElement.className = "text-emerald-400 font-bold block";
+            } else if (mediaPing < 120) {
+                pingElement.className = "text-amber-400 font-bold block";
+            } else {
+                pingElement.className = "text-rose-400 font-bold block";
+            }
+        } else {
+            pingElement.innerText = "Erro";
+            pingElement.className = "text-rose-500 font-bold block";
+        }
+    }
 
-      // 3. ARQUITETURA: CARREGAMENTO DINÂMICO DAS FERRAMENTAS (Seu original)
-      async function carregarFerramentas() {
-          const grid = document.getElementById('grid-ferramentas');
-          let resposta;
-          
-          try {
-              resposta = await fetch('ferramentas.json');
-              if (!resposta.ok) {
-                  resposta = await fetch('ferramentas.json.json');
-              }
-              if (!resposta.ok) throw new Error('Arquivo JSON de ferramentas não localizado.');
-              
-              const ferramentas = await resposta.json();
-              grid.innerHTML = '';
+    // 3. ARQUITETURA: CARREGAMENTO DINÂMICO DAS FERRAMENTAS (Seu original)
+    async function carregarFerramentas() {
+        const grid = document.getElementById('grid-ferramentas');
+        let resposta;
+        
+        try {
+            resposta = await fetch('ferramentas.json');
+            if (!resposta.ok) {
+                resposta = await fetch('ferramentas.json.json');
+            }
+            if (!resposta.ok) throw new Error('Arquivo JSON de ferramentas não localizado.');
+            
+            const ferramentas = await resposta.json();
+            grid.innerHTML = '';
 
-              if(ferramentas.length === 0) {
-                  grid.innerHTML = '<p class="text-slate-500 font-mono col-span-full">Nenhuma ferramenta homologada no momento.</p>';
-                  return;
-              }
+            if(ferramentas.length === 0) {
+                grid.innerHTML = '<p class="text-slate-500 font-mono col-span-full">Nenhuma ferramenta homologada no momento.</p>';
+                return;
+            }
 
-              ferramentas.forEach(item => {
-                  const card = document.createElement('a');
-                  card.href = item.url;
-                  card.className = "group block bg-slate-950/40 hover:bg-slate-950/80 border border-slate-800 hover:border-cyan-500/50 rounded-xl p-6 transition-all duration-300 shadow-lg hover:shadow-cyan-500/5 hover:-translate-y-1 flex flex-col justify-between h-48";
-                  
-                  card.innerHTML = `
-                      <div>
-                          <div class="flex items-center justify-between mb-3">
-                              <span class="text-xs font-mono px-2 py-1 rounded bg-slate-800 text-slate-400 border border-slate-700/50 group-hover:text-cyan-300 group-hover:border-cyan-500/30 transition-colors">
-                                  ${item.categoria}
-                              </span>
-                              <span class="text-slate-600 group-hover:text-cyan-400 transition-colors font-mono text-sm">&lt;/&gt;</span>
-                          </div>
-                          <h3 class="text-lg font-bold text-slate-200 group-hover:text-white transition-colors">
-                              ${item.titulo}
-                          </h3>
-                          <p class="text-sm text-slate-400 mt-2 line-clamp-2">
-                              ${item.descricao}
-                          </p>
-                      </div>
-                      <div class="text-xs font-mono text-cyan-500 font-semibold mt-4 flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
-                          Acessar console 
-                          <span class="transform group-hover:translate-x-1 transition-transform">&rarr;</span>
-                      </div>
-                  `;
-                  grid.appendChild(card);
-              });
+            ferramentas.forEach(item => {
+                const card = document.createElement('a');
+                card.href = item.url;
+                card.className = "group block bg-slate-950/40 hover:bg-slate-950/80 border border-slate-800 hover:border-cyan-500/50 rounded-xl p-6 transition-all duration-300 shadow-lg hover:shadow-cyan-500/5 hover:-translate-y-1 flex flex-col justify-between h-48";
+                
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-xs font-mono px-2 py-1 rounded bg-slate-800 text-slate-400 border border-slate-700/50 group-hover:text-cyan-300 group-hover:border-cyan-500/30 transition-colors">
+                                ${item.categoria}
+                            </span>
+                            <span class="text-slate-600 group-hover:text-cyan-400 transition-colors font-mono text-sm">&lt;/&gt;</span>
+                        </div>
+                        <h3 class="text-lg font-bold text-slate-200 group-hover:text-white transition-colors">
+                            ${item.titulo}
+                        </h3>
+                        <p class="text-sm text-slate-400 mt-2 line-clamp-2">
+                            ${item.descricao}
+                        </p>
+                    </div>
+                    <div class="text-xs font-mono text-cyan-500 font-semibold mt-4 flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
+                        Acessar console 
+                        <span class="transform group-hover:translate-x-1 transition-transform">&rarr;</span>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
 
-          } catch (erro) {
-              console.error('Erro ao processar a arquitetura do hub:', erro);
-              grid.innerHTML = `
-                  <div class="col-span-full bg-rose-950/20 border border-rose-900/50 rounded-lg p-4 text-rose-300 font-mono text-sm text-center">
-                      ERRO [0x01]: Falha ao carregar a matriz de ferramentas (ferramentas.json).
-                  </div>
-              `;
-          }
-      }
+        } catch (erro) {
+            console.error('Erro ao processar a arquitetura do hub:', erro);
+            grid.innerHTML = `
+                <div class="col-span-full bg-rose-950/20 border border-rose-900/50 rounded-lg p-4 text-rose-300 font-mono text-sm text-center">
+                    ERRO [0x01]: Falha ao carregar a matriz de ferramentas (ferramentas.json).
+                </div>
+            `;
+        }
+    }
 
-      // 4. NOVA ARQUITETURA MODULAR: CARREGAMENTO DA SIDEBAR VIA JSON
-      async function carregarSidebar() {
-          const aside = document.getElementById('sidebar-dinamica');
-          try {
-              const resposta = await fetch('sidebar.json');
-              if (!resposta.ok) throw new Error('sidebar.json não localizado');
-              
-              const blocos = await resposta.json();
-              aside.innerHTML = '';
+    // 4. NOVA ARQUITETURA MODULAR: CARREGAMENTO DA SIDEBAR VIA JSON
+    async function carregarSidebar() {
+        const aside = document.getElementById('sidebar-dinamica');
+        try {
+            const resposta = await fetch('sidebar.json');
+            if (!resposta.ok) throw new Error('sidebar.json não localizado');
+            
+            const blocos = await resposta.json();
+            aside.innerHTML = '';
 
-              blocos.forEach(bloco => {
-                  if (!bloco.ativo) return;
+            blocos.forEach(bloco => {
+                if (!bloco.ativo) return;
 
-                  const card = document.createElement('div');
-                  
-                  if (bloco.tipo === 'relogio') {
-                      card.className = "p-4 bg-slate-950/40 border border-slate-800 rounded-xl shadow-lg";
-                      card.innerHTML = `
-                          <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-                              <span class="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
-                              ${bloco.titulo}
-                          </div>
-                          <div class="space-y-3">
-                              <div class="bg-slate-900/60 p-3 border border-slate-800/60 rounded-lg flex justify-between items-center">
-                                  <span class="text-xs text-slate-400">Brasília (UTC-3)</span>
-                                  <span id="clock-br" class="text-base font-bold text-cyan-400 tracking-widest">00:00:00</span>
-                              </div>
-                              <div class="bg-slate-900/60 p-3 border border-slate-800/60 rounded-lg flex justify-between items-center">
-                                  <span class="text-xs text-slate-400">Padrão Global (UTC)</span>
-                                  <span id="clock-utc" class="text-base font-bold text-slate-300 tracking-widest">00:00:00</span>
-                              </div>
-                          </div>
-                      `;
-                  } 
-                  else if (bloco.tipo === 'ntp') {
-                      card.className = "p-4 bg-slate-950/40 border border-slate-800 rounded-xl shadow-lg";
-                      card.innerHTML = `
-                          <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
-                              <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
-                              ${bloco.titulo}
-                          </div>
-                          <div id="sidebar-ntp" class="space-y-2.5"></div>
-                      `;
-                  } 
-                  else if (bloco.tipo === 'adsense') {
-                      card.className = "p-2 bg-slate-950/20 border border-dashed border-slate-800 rounded-xl flex flex-col items-center justify-center min-h-[250px]";
-                      card.innerHTML = `
-                          <span class="text-[9px] text-slate-600 uppercase tracking-widest mb-1">${bloco.titulo}</span>
-                          <div class="w-[300px] h-[250px] bg-slate-900/40 rounded border border-slate-950 flex items-center justify-center">
-                              <span class="text-[10px] text-slate-700">Display Ad (300x250)</span>
-                          </div>
-                      `;
-                  }
-                  aside.appendChild(card);
-              });
+                const card = document.createElement('div');
+                
+                if (bloco.tipo === 'relogio') {
+                    card.className = "p-4 bg-slate-950/40 border border-slate-800 rounded-xl shadow-lg";
+                    card.innerHTML = `
+                        <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                            <span class="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
+                            ${bloco.titulo}
+                        </div>
+                        <div class="space-y-3">
+                            <div class="bg-slate-900/60 p-3 border border-slate-800/60 rounded-lg flex justify-between items-center">
+                                <span class="text-xs text-slate-400">Brasília (UTC-3)</span>
+                                <span id="clock-br" class="text-base font-bold text-cyan-400 tracking-widest">00:00:00</span>
+                            </div>
+                            <div class="bg-slate-900/60 p-3 border border-slate-800/60 rounded-lg flex justify-between items-center">
+                                <span class="text-xs text-slate-400">Padrão Global (UTC)</span>
+                                <span id="clock-utc" class="text-base font-bold text-slate-300 tracking-widest">00:00:00</span>
+                            </div>
+                        </div>
+                    `;
+                } 
+                else if (bloco.tipo === 'ntp') {
+                    card.className = "p-4 bg-slate-950/40 border border-slate-800 rounded-xl shadow-lg";
+                    card.innerHTML = `
+                        <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                            <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+                            ${bloco.titulo}
+                        </div>
+                        <div id="sidebar-ntp" class="space-y-2.5"></div>
+                    `;
+                } 
+                else if (bloco.tipo === 'adsense') {
+                    card.className = "p-2 bg-slate-950/20 border border-dashed border-slate-800 rounded-xl flex flex-col items-center justify-center min-h-[250px]";
+                    card.innerHTML = `
+                        <span class="text-[9px] text-slate-600 uppercase tracking-widest mb-1">${bloco.titulo}</span>
+                        <div class="w-[300px] h-[250px] bg-slate-900/40 rounded border border-slate-950 flex items-center justify-center">
+                            <span class="text-[10px] text-slate-700">Display Ad (300x250)</span>
+                        </div>
+                    `;
+                }
+                aside.appendChild(card);
+            });
 
-              if (document.getElementById('sidebar-ntp')) {
-                  renderizarSubItensNTP();
-                  testarNTPRegioes();
-              }
-          } catch (erro) {
-              console.error('Erro na montagem da sidebar:', erro);
-          }
-      }
+            if (document.getElementById('sidebar-ntp')) {
+                renderizarSubItensNTP();
+                testarNTPRegioes();
+            }
+        } catch (erro) {
+            console.error('Erro na montagem da sidebar:', erro);
+        }
+    }
 
-      // Sub-função para montar os itens internos do NTP
-      function renderizarSubItensNTP() {
-          const container = document.getElementById('sidebar-ntp');
-          if (!container) return;
-          container.innerHTML = nosNTP.map((no, idx) => `
-              <div class="p-2.5 bg-slate-900/40 border border-slate-800/80 rounded-lg flex justify-between items-center text-xs font-mono">
-                  <div>
-                      <div class="font-bold text-slate-300 text-[11px]">${no.nome}</div>
-                      <div class="text-[9px] text-slate-500">${no.label}</div>
-                  </div>
-                  <div class="text-right">
-                      <div id="sb-ntp-rtt-${idx}" class="font-bold text-slate-400">--</div>
-                      <div id="sb-ntp-status-${idx}" class="text-[8px] font-bold text-slate-600 uppercase mt-0.5">Calculando</div>
-                  </div>
-              </div>
-          `).join('');
-      }
+    // Sub-função para montar os itens internos do NTP
+    function renderizarSubItensNTP() {
+        const container = document.getElementById('sidebar-ntp');
+        if (!container) return;
+        container.innerHTML = nosNTP.map((no, idx) => `
+            <div class="p-2.5 bg-slate-900/40 border border-slate-800/80 rounded-lg flex justify-between items-center text-xs font-mono">
+                <div>
+                    <div class="font-bold text-slate-300 text-[11px]">${no.nome}</div>
+                    <div class="text-[9px] text-slate-500">${no.label}</div>
+                </div>
+                <div class="text-right">
+                    <div id="sb-ntp-rtt-${idx}" class="font-bold text-slate-400">--</div>
+                    <div id="sb-ntp-status-${idx}" class="text-[8px] font-bold text-slate-600 uppercase mt-0.5">Calculando</div>
+                </div>
+            </div>
+        `).join('');
+    }
 
-      // Loop contínuo dos Relógios
-      function atualizarRelogios() {
-          if (!document.getElementById('clock-br')) return;
-          const agora = new Date();
-          const opcoesBR = { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
-          document.getElementById('clock-br').innerText = new Intl.DateTimeFormat('pt-BR', opcoesBR).format(agora);
-          
-          const horaUTC = String(agora.getUTCHours()).padStart(2, '0');
-          const minUTC = String(agora.getUTCMinutes()).padStart(2, '0');
-          const segUTC = String(agora.getUTCSeconds()).padStart(2, '0');
-          document.getElementById('clock-utc').innerText = `${horaUTC}:${minUTC}:${segUTC}`;
-      }
+    // Loop contínuo dos Relógios
+    function atualizarRelogios() {
+        if (!document.getElementById('clock-br')) return;
+        const agora = new Date();
+        const opcoesBR = { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false };
+        document.getElementById('clock-br').innerText = new Intl.DateTimeFormat('pt-BR', opcoesBR).format(agora);
+        
+        const horaUTC = String(agora.getUTCHours()).padStart(2, '0');
+        const minUTC = String(agora.getUTCMinutes()).padStart(2, '0');
+        const segUTC = String(agora.getUTCSeconds()).padStart(2, '0');
+        document.getElementById('clock-utc').innerText = `${horaUTC}:${minUTC}:${segUTC}`;
+    }
 
-      // Telemetria ativa de RTT do NTP
-      async function testarNTPRegioes() {
-          nosNTP.forEach(async (no, idx) => {
-              const rttEl = document.getElementById(`sb-ntp-rtt-${idx}`);
-              const statusEl = document.getElementById(`sb-ntp-status-${idx}`);
-              if (!rttEl) return;
-              
-              const urlFinal = `${no.url}?cb=sb-ntp-${idx}-${Date.now()}`;
-              const tempoInicial = performance.now();
-              
-              try {
-                  const controller = new AbortController();
-                  const tId = setTimeout(() => controller.abort(), 2000);
+    // Telemetria ativa de RTT do NTP
+    async function testarNTPRegioes() {
+        nosNTP.forEach(async (no, idx) => {
+            const rttEl = document.getElementById(`sb-ntp-rtt-${idx}`);
+            const statusEl = document.getElementById(`sb-ntp-status-${idx}`);
+            if (!rttEl) return;
+            
+            const urlFinal = `${no.url}?cb=sb-ntp-${idx}-${Date.now()}`;
+            const tempoInicial = performance.now();
+            
+            try {
+                const controller = new AbortController();
+                const tId = setTimeout(() => controller.abort(), 2000);
 
-                  await fetch(urlFinal, { mode: 'no-cors', cache: 'no-store', priority: 'high', signal: controller.signal });
-                  clearTimeout(tId);
-                  
-                  let rtt = Math.round(performance.now() - tempoInicial);
-                  const [entry] = performance.getEntriesByName(urlFinal);
-                  if (entry && entry.duration > 0) rtt = Math.round(entry.duration);
+                await fetch(urlFinal, { mode: 'no-cors', cache: 'no-store', priority: 'high', signal: controller.signal });
+                clearTimeout(tId);
+                
+                let rtt = Math.round(performance.now() - tempoInicial);
+                const [entry] = performance.getEntriesByName(urlFinal);
+                if (entry && entry.duration > 0) rtt = Math.round(entry.duration);
 
-                  rttEl.innerText = `${rtt} ms`;
-                  if (rtt < 35) {
-                      rttEl.className = "font-bold text-emerald-400";
-                      statusEl.innerText = "Sincronizado";
-                      statusEl.className = "text-[8px] font-bold text-emerald-500 uppercase mt-0.5";
-                  } else {
-                      rttEl.className = "font-bold text-cyan-400";
-                      statusEl.innerText = "Atraso L7";
-                      statusEl.className = "text-[8px] font-bold text-cyan-500 uppercase mt-0.5";
-                  }
-              } catch (err) {
-                  rttEl.innerText = "Timeout";
-                  rttEl.className = "font-bold text-rose-500";
-                  statusEl.innerText = "Desconectado";
-                  statusEl.className = "text-[8px] font-bold text-rose-600 uppercase mt-0.5";
-              }
-          });
+                rttEl.innerText = `${rtt} ms`;
+                if (rtt < 35) {
+                    rttEl.className = "font-bold text-emerald-400";
+                    statusEl.innerText = "Sincronizado";
+                    statusEl.className = "text-[8px] font-bold text-emerald-500 uppercase mt-0.5";
+                } else {
+                    rttEl.className = "font-bold text-cyan-400";
+                    statusEl.innerText = "Atraso L7";
+                    statusEl.className = "text-[8px] font-bold text-cyan-500 uppercase mt-0.5";
+                }
+            } catch (err) {
+                rttEl.innerText = "Timeout";
+                rttEl.className = "font-bold text-rose-500";
+                statusEl.innerText = "Desconectado";
+                statusEl.className = "text-[8px] font-bold text-rose-600 uppercase mt-0.5";
+            }
+        });
       }
 
       // Inicialização Paralela de todos os barramentos
