@@ -1,0 +1,17 @@
+[
+  {
+    "tipo": "relogio",
+    "titulo": "Sincronismo de Tempo (Clock)",
+    "ativo": true
+  },
+  {
+    "tipo": "ntp",
+    "titulo": "Status de Estrato NTP",
+    "ativo": true
+  },
+  {
+    "tipo": "adsense",
+    "titulo": "Publicidade / AdSense Slot",
+    "ativo": true
+  }
+]
